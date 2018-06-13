@@ -1,18 +1,14 @@
 require 'securerandom'
 
 class WordHolder
-  attr_accessor :id, :used_letter_ids
+  attr_accessor :used_letter_ids
 
   def initialize
-    @id = SecureRandom.uuid.to_s
     @used_letter_ids = []
   end
 
-  def build_word(letter_elements)
-    word = ''
-    @used_letter_ids.each do |id|
-      wor
-    end
+  def build_word(letters)
+    @used_letter_ids.map { |id| letters[id] }.join
   end
 
   def copy(used_letter_ids)
@@ -22,49 +18,41 @@ class WordHolder
   end
 end
 
-class Letter
-  attr_accessor :id, :value, :neighbours
-
-  def initialize(value)
-    @id = SecureRandom.uuid.to_s
-    @value = value
-    @neighbours = []
-  end
-end
-
 class PopcornSolver
-  attr_accessor :letter_elements
+  attr_accessor :letters, :connections
 
-  def initialize(letter_elements)
-    @letter_elements = letter_elements
+  def initialize(letters, connections)
+    @letters = letters
+    @connections = connections
   end
 
   def words
     found_words = []
-    @letter_elements.each do |letter|
-      found_words += find_words(WordHolder.new, letter)
+    0.upto(@letters.size - 1) do |letter_idx|
+      found_words += find_words(WordHolder.new, letter_idx)
     end
     found_words.uniq
   end
 
-  def find_words(word_holder, current_letter)
+  def find_words(word_holder, current_letter_idx)
     found_words = []
 
-    if word_holder.used_letter_ids.include?(current_letter.id)
-      found_words += [word_holder.word] if word? word_holder.word
+    if word_holder.used_letter_ids.include?(current_letter_idx)
+      word = word_holder.build_word(letters)
+      found_words += [word] if valid_word?(word)
     else
-      new_used_letter_ids = word_holder.used_letter_ids + [current_letter.id]
+      new_used_letter_ids = word_holder.used_letter_ids + [current_letter_idx]
       new_word_holder = word_holder.copy(new_used_letter_ids)
 
-      current_letter.neighbours.each do |letter|
-        found_words += find_words(new_word_holder, letter)
+      connections[current_letter_idx].each do |connection_idx|
+        found_words += find_words(new_word_holder, connection_idx)
       end
     end
 
     found_words
   end
 
-  def word?(word)
+  def valid_word?(word)
     %w[POP CAT DOG ROCK POPCORN CORN].include?(word)
   end
 end
