@@ -38,13 +38,3 @@ class Box
     Box.new(@height, @width, @character)
   end
 end
-
-box = Box.new(10, 3, '0')
-          .print
-          .expand(2)
-          .print
-          .resize(3, 10)
-          .fill('#')
-          .print
-          .rotate
-          .print
